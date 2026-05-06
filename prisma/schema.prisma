@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ------------------------------------------------------
+// DOMÍNIO: USUÁRIO
+// ------------------------------------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  areas      Area[]
+  accounts   Account[]
+  categories Category[]
+}
+
+model Area {
+  id        String   @id @default(uuid())
+  name      String   // Ex: Financeiro, Pessoal, Trabalho, Estudo
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+  habits   Habit[]
+}
+
+// ------------------------------------------------------
+// DOMÍNIO: TAREFAS E PROJETOS
+// ------------------------------------------------------
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  status    String   @default("ACTIVE") // ACTIVE, COMPLETED, ARCHIVED
+  areaId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  area  Area   @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  tasks Task[]
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  isCompleted Boolean   @default(false)
+  dueDate     DateTime?
+  projectId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------------------------
+// DOMÍNIO: HÁBITOS
+// ------------------------------------------------------
+
+model Habit {
+  id        String   @id @default(uuid())
+  name      String
+  frequency String   // Ex: DAILY, WEEKLY
+  areaId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  area Area @relation(fields: [areaId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------------------------
+// DOMÍNIO: FINANCEIRO
+// ------------------------------------------------------
+
+model Account {
+  id        String   @id @default(uuid())
+  name      String   // Ex: Conta Corrente, Carteira
+  balance   Float    @default(0)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // INCOME (Receita) ou EXPENSE (Despesa)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String
+  date        DateTime @default(now())
+  type        String   // INCOME, EXPENSE
+  accountId   String
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  account  Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
