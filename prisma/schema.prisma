@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 // ------------------------------------------------------
@@ -24,7 +24,7 @@ model User {
 
 model Area {
   id        String   @id @default(uuid())
-  name      String   // Ex: Financeiro, Pessoal, Trabalho, Estudo
+  name      String
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -32,6 +32,8 @@ model Area {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects Project[]
   habits   Habit[]
+
+  @@unique([name, userId])
 }
 
 // ------------------------------------------------------
