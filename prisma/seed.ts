@@ -1,15 +1,17 @@
 import "dotenv/config";
-
-import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
+// Adicionando a configuração de SSL obrigatória para o Supabase
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  }
 });
-
-const prisma = new PrismaClient({
-  adapter,
-});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const user = await prisma.user.upsert({
@@ -28,19 +30,21 @@ async function main() {
   const areas = ["Financeiro", "Pessoal", "Trabalho", "Estudo"];
 
   for (const areaName of areas) {
-    await prisma.area.upsert({
+    const existingArea = await prisma.area.findFirst({
       where: {
-        name_userId: {
-          name: areaName,
-          userId: user.id,
-        },
-      },
-      update: {},
-      create: {
         name: areaName,
         userId: user.id,
       },
     });
+
+    if (!existingArea) {
+      await prisma.area.create({
+        data: {
+          name: areaName,
+          userId: user.id,
+        },
+      });
+    }
   }
 
   console.log("Áreas criadas/verificadas com sucesso!");
