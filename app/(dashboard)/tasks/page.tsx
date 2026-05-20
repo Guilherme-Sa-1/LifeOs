@@ -3,9 +3,22 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle, Trash2 } from "lucide-react";
 import { CreateTaskModal } from "@/features/tasks/components/create-task-modal";
 import { toggleTask, deleteTask } from "@/features/tasks/actions";
+import { getAuthUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function TasksPage() {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+
+  // Busca apenas as tarefas vinculadas aos projetos deste usuário específico
   const tasks = await prisma.task.findMany({
+    where: {
+      project: {
+        area: {
+          userId: user.id,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
     include: { project: true },
   });
@@ -19,14 +32,14 @@ export default async function TasksPage() {
 
       <div className="grid gap-4">
         {tasks.length === 0 ? (
-          <p className="text-muted-foreground">Você ainda não tem tarefas cadastradas.</p>
+          <p className="text-muted-foreground italic">Você ainda não tem tarefas cadastradas.</p>
         ) : (
           tasks.map((task) => {
             const toggleAction = toggleTask.bind(null, task.id, task.isCompleted);
             const deleteAction = deleteTask.bind(null, task.id);
 
             return (
-              <Card key={task.id} className="flex flex-row items-center p-4 justify-between group">
+              <Card key={task.id} className="flex flex-row items-center p-4 justify-between group hover:shadow-sm transition-shadow">
                 <div className="flex items-center">
                   <form action={toggleAction}>
                     <button type="submit" className="mr-4 text-muted-foreground hover:text-primary">
@@ -44,14 +57,18 @@ export default async function TasksPage() {
                     <CardContent className="p-0 mt-1 flex gap-2 text-sm text-muted-foreground">
                       <span>{task.project?.name || "Sem projeto"}</span>
                       {task.dueDate && (
-                        <span>• Vence em: {task.dueDate.toLocaleDateString()}</span>
+                        <span>• Vence em: {task.dueDate.toLocaleDateString("pt-BR")}</span>
                       )}
                     </CardContent>
                   </div>
                 </div>
 
                 <form action={deleteAction}>
-                  <button type="submit" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    type="submit" 
+                    className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                    title="Excluir tarefa"
+                  >
                     <Trash2 className="h-5 w-5" />
                   </button>
                 </form>
