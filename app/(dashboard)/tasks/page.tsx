@@ -11,15 +11,8 @@ export default async function TasksPage() {
   const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  // Busca apenas as tarefas vinculadas aos projetos deste usuário específico
   const tasks = await prisma.task.findMany({
-    where: {
-      project: {
-        area: {
-          userId: user.id,
-        },
-      },
-    },
+    where: { project: { area: { userId: user.id } } },
     orderBy: { createdAt: "desc" },
     include: { project: true },
   });
@@ -35,7 +28,7 @@ export default async function TasksPage() {
         {tasks.length === 0 ? (
           <p className="text-muted-foreground italic">Você ainda não tem tarefas cadastradas.</p>
         ) : (
-          tasks.map((task) => {
+          tasks.map((task: any) => {
             const toggleAction = toggleTask.bind(null, task.id, task.isCompleted);
             const deleteAction = deleteTask.bind(null, task.id);
 

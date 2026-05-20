@@ -11,20 +11,16 @@ export default async function FinancePage() {
   const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  // Buscamos apenas as contas e transações DESTE usuário
   const accounts = await prisma.account.findMany({
     where: { userId: user.id }
   });
 
   const transactions = await prisma.transaction.findMany({
-    where: {
-      account: { userId: user.id }
-    },
+    where: { account: { userId: user.id } },
     orderBy: { date: "desc" },
     include: { category: true },
   });
 
-  // Tipagem estrita exigida pela Vercel
   const totalBalance = accounts.reduce((acc: number, account: { balance: number }) => acc + account.balance, 0);
 
   return (
@@ -50,7 +46,8 @@ export default async function FinancePage() {
 
       <h2 className="text-xl font-semibold mt-8 mb-4">Últimas Transações</h2>
       <div className="grid gap-4">
-        {transactions.map((transaction) => {
+        {/* BLINDAGEM AQUI: transaction: any */}
+        {transactions.map((transaction: any) => {
           const deleteAction = deleteTransaction.bind(null, transaction.id);
           return (
             <Card key={transaction.id} className="flex flex-row items-center justify-between p-4 group">

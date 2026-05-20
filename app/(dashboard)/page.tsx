@@ -10,7 +10,6 @@ export default async function DashboardHome() {
 
   const today = new Date().toLocaleString("en-CA", { timeZone: "America/Sao_Paulo" }).split(",")[0];
 
-  // Filtros aplicados pelo user.id
   const [accounts, pendingTasksCount, habits] = await Promise.all([
     prisma.account.findMany({ where: { userId: user.id } }),
     prisma.task.count({ 
@@ -25,10 +24,9 @@ export default async function DashboardHome() {
     }),
   ]);
 
-  // Tipagem estrita exigida pela Vercel
   const totalBalance = accounts.reduce((acc: number, account: { balance: number }) => acc + account.balance, 0);
   const totalHabits = habits.length;
-  const completedHabits = habits.filter(habit => habit.logs.length > 0).length;
+  const completedHabits = habits.filter((habit: any) => habit.logs.length > 0).length;
 
   return (
     <div className="space-y-6">

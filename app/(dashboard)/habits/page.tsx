@@ -13,7 +13,6 @@ export default async function HabitsPage() {
 
   const today = new Date().toLocaleString("en-CA", { timeZone: "America/Sao_Paulo" }).split(",")[0];
 
-  // Filtramos hábitos e áreas pelo ID do usuário
   const [habits, areas] = await Promise.all([
     prisma.habit.findMany({
       where: { area: { userId: user.id } },
@@ -36,7 +35,7 @@ export default async function HabitsPage() {
         {habits.length === 0 ? (
           <p className="text-muted-foreground italic">Você ainda não tem hábitos cadastrados.</p>
         ) : (
-          habits.map((habit) => {
+          habits.map((habit: any) => {
             const isCompletedToday = habit.logs.length > 0;
             const toggleAction = toggleHabitLog.bind(null, habit.id, today);
             const deleteAction = deleteHabit.bind(null, habit.id);
