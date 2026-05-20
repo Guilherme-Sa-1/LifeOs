@@ -24,8 +24,8 @@ export default async function FinancePage() {
     include: { category: true },
   });
 
-  // CORREÇÃO AQUI: (acc: number, account)
-  const totalBalance = accounts.reduce((acc: number, account) => acc + account.balance, 0);
+  // Tipagem estrita exigida pela Vercel
+  const totalBalance = accounts.reduce((acc: number, account: { balance: number }) => acc + account.balance, 0);
 
   return (
     <div className="space-y-6">

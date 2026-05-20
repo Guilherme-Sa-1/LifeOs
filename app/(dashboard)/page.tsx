@@ -25,8 +25,8 @@ export default async function DashboardHome() {
     }),
   ]);
 
-  // CORREÇÃO AQUI: (acc: number, account)
-  const totalBalance = accounts.reduce((acc: number, account) => acc + account.balance, 0);
+  // Tipagem estrita exigida pela Vercel
+  const totalBalance = accounts.reduce((acc: number, account: { balance: number }) => acc + account.balance, 0);
   const totalHabits = habits.length;
   const completedHabits = habits.filter(habit => habit.logs.length > 0).length;
 
