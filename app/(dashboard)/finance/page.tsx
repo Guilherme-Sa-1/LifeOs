@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowDownCircle, ArrowUpCircle, Wallet, Trash2 } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
 import { CreateTransactionModal } from "@/features/finance/components/create-transaction-modal";
 import { deleteTransaction } from "@/features/finance/actions";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DeleteButton } from "@/components/shared/delete-button";
 
 export default async function FinancePage() {
   const user = await getAuthUser();
@@ -70,11 +71,7 @@ export default async function FinancePage() {
                   {transaction.type === "INCOME" ? "+" : "-"} R$ {transaction.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </div>
                 <form action={deleteAction}>
-  <DeleteButton />
-</form>
-                  <button type="submit" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  <DeleteButton />
                 </form>
               </div>
             </Card>

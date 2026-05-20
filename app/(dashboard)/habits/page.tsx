@@ -1,50 +1,52 @@
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle } from "lucide-react";
-import { CreateTaskModal } from "@/features/tasks/components/create-task-modal";
-import { toggleTask, deleteTask } from "@/features/tasks/actions";
+import { CreateHabitModal } from "@/features/habits/components/create-habit-modal";
+import { deleteHabit, toggleHabitLog } from "@/features/habits/actions";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DeleteButton } from "@/components/shared/delete-button";
 
-export default async function TasksPage() {
+export default async function HabitsPage() {
   const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  // Busca apenas as tarefas vinculadas aos projetos deste usuário específico
-  const tasks = await prisma.task.findMany({
-    where: {
-      project: {
-        area: {
-          userId: user.id,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    include: { project: true },
-  });
+  const today = new Date().toLocaleString("en-CA", { timeZone: "America/Sao_Paulo" }).split(",")[0];
+
+  // Filtramos hábitos e áreas pelo ID do usuário
+  const [habits, areas] = await Promise.all([
+    prisma.habit.findMany({
+      where: { area: { userId: user.id } },
+      orderBy: { createdAt: "desc" },
+      include: { area: true, logs: { where: { date: today } } },
+    }),
+    prisma.area.findMany({
+      where: { userId: user.id }
+    })
+  ]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Tarefas</h1>
-        <CreateTaskModal />
+        <h1 className="text-3xl font-bold tracking-tight">Hábitos</h1>
+        <CreateHabitModal areas={areas} />
       </div>
 
       <div className="grid gap-4">
-        {tasks.length === 0 ? (
-          <p className="text-muted-foreground italic">Você ainda não tem tarefas cadastradas.</p>
+        {habits.length === 0 ? (
+          <p className="text-muted-foreground italic">Você ainda não tem hábitos cadastrados.</p>
         ) : (
-          tasks.map((task) => {
-            const toggleAction = toggleTask.bind(null, task.id, task.isCompleted);
-            const deleteAction = deleteTask.bind(null, task.id);
+          habits.map((habit) => {
+            const isCompletedToday = habit.logs.length > 0;
+            const toggleAction = toggleHabitLog.bind(null, habit.id, today);
+            const deleteAction = deleteHabit.bind(null, habit.id);
 
             return (
-              <Card key={task.id} className="flex flex-row items-center p-4 justify-between group hover:shadow-sm transition-shadow">
-                <div className="flex items-center">
+              <Card key={habit.id} className="flex flex-row items-center justify-between p-4 group hover:shadow-sm transition-shadow">
+                <div className="flex items-center gap-4">
                   <form action={toggleAction}>
-                    <button type="submit" className="mr-4 text-muted-foreground hover:text-primary">
-                      {task.isCompleted ? (
+                    <button type="submit" className="mr-2 text-muted-foreground hover:text-primary">
+                      {isCompletedToday ? (
                         <CheckCircle2 className="h-6 w-6 text-green-500" />
                       ) : (
                         <Circle className="h-6 w-6" />
@@ -52,18 +54,13 @@ export default async function TasksPage() {
                     </button>
                   </form>
                   <div>
-                    <CardTitle className={`text-base font-medium ${task.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-                      {task.title}
+                    <CardTitle className={`text-base font-medium ${isCompletedToday ? 'line-through text-muted-foreground' : ''}`}>
+                      {habit.name}
                     </CardTitle>
-                    <CardContent className="p-0 mt-1 flex gap-2 text-sm text-muted-foreground">
-                      <span>{task.project?.name || "Sem projeto"}</span>
-                      {task.dueDate && (
-                        <span>• Vence em: {task.dueDate.toLocaleDateString("pt-BR")}</span>
-                      )}
-                    </CardContent>
+                    <p className="text-xs text-muted-foreground mt-1">{habit.area.name}</p>
                   </div>
                 </div>
-
+                
                 <form action={deleteAction}>
                   <DeleteButton />
                 </form>
