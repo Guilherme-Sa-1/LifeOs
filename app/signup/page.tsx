@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signUp } from "./action"; 
 import Link from "next/link";
+import { SubmitButton } from "@/components/shared/submit-button";
 
 export default async function SignUpPage({
   searchParams,
@@ -40,7 +41,7 @@ export default async function SignUpPage({
               <p className="text-sm text-red-500">{params.error}</p>
             )}
 
-            <Button type="submit" className="w-full">Cadastrar</Button>
+            <SubmitButton className="w-full">Cadastrar</SubmitButton>
             
             <div className="text-center text-sm mt-2">
               Já tem uma conta? <Link href="/login" className="underline hover:text-primary">Faça login</Link>

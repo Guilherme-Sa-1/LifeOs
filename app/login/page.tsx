@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "./actions";
 import Link from "next/link";
+import { SubmitButton } from "@/components/shared/submit-button";
+
 
 export default async function LoginPage({
   searchParams,
@@ -42,9 +44,9 @@ export default async function LoginPage({
               <p className="text-sm text-red-500">{params.error}</p>
             )}
 
-            <Button type="submit" className="w-full">
+            <SubmitButton className="w-full">
               Entrar
-            </Button>
+              </SubmitButton>
             
             {/* Link para a tela de Cadastro adicionado aqui */}
             <div className="text-center text-sm mt-2">

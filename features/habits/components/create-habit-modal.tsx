@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { createHabit } from "@/features/habits/actions";
+import { SubmitButton } from "@/components/shared/submit-button";
 
 interface Props {
   areas: { id: string; name: string }[];
@@ -45,7 +46,7 @@ export function CreateHabitModal({ areas }: Props) {
               <option value="WEEKLY">Semanal</option>
             </select>
           </div>
-          <Button type="submit">Salvar</Button>
+          <SubmitButton>Salvar</SubmitButton>
         </form>
       </DialogContent>
     </Dialog>

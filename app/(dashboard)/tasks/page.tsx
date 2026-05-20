@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import { CreateTaskModal } from "@/features/tasks/components/create-task-modal";
 import { toggleTask, deleteTask } from "@/features/tasks/actions";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DeleteButton } from "@/components/shared/delete-button";
 
 export default async function TasksPage() {
   const user = await getAuthUser();
@@ -64,13 +65,7 @@ export default async function TasksPage() {
                 </div>
 
                 <form action={deleteAction}>
-                  <button 
-                    type="submit" 
-                    className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-2"
-                    title="Excluir tarefa"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  <DeleteButton />
                 </form>
               </Card>
             );

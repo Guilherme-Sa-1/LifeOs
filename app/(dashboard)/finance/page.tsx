@@ -70,6 +70,8 @@ export default async function FinancePage() {
                   {transaction.type === "INCOME" ? "+" : "-"} R$ {transaction.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </div>
                 <form action={deleteAction}>
+  <DeleteButton />
+</form>
                   <button type="submit" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 className="h-5 w-5" />
                   </button>
