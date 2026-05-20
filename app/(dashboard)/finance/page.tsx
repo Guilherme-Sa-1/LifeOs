@@ -24,7 +24,8 @@ export default async function FinancePage() {
     include: { category: true },
   });
 
-  const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+  // CORREÇÃO AQUI: (acc: number, account)
+  const totalBalance = accounts.reduce((acc: number, account) => acc + account.balance, 0);
 
   return (
     <div className="space-y-6">

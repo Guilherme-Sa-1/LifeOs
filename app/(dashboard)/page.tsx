@@ -25,7 +25,8 @@ export default async function DashboardHome() {
     }),
   ]);
 
-  const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+  // CORREÇÃO AQUI: (acc: number, account)
+  const totalBalance = accounts.reduce((acc: number, account) => acc + account.balance, 0);
   const totalHabits = habits.length;
   const completedHabits = habits.filter(habit => habit.logs.length > 0).length;
 
