@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
@@ -32,15 +32,20 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Se não tem usuário e não está na página de login, expulsa para o login
-  if (!user && !request.nextUrl.pathname.startsWith("/login")) {
+  // Rotas públicas que não exigem login
+  const isPublicRoute = 
+    request.nextUrl.pathname.startsWith("/login") || 
+    request.nextUrl.pathname.startsWith("/signup");
+
+  // Se não tem usuário e não está em rota pública, expulsa para o login
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Se já está logado e tenta ir para o login, joga pro painel
-  if (user && request.nextUrl.pathname.startsWith("/login")) {
+  // Se já está logado e tenta ir para login/signup, joga pro painel
+  if (user && isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
@@ -51,13 +56,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

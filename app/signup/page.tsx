@@ -1,61 +1,53 @@
-"use server";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { signUp } from "./action"; 
+import Link from "next/link";
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { getAuthUser } from "@/lib/auth";
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
 
-export async function createTransaction(formData: FormData) {
-  const user = await getAuthUser();
-  if (!user) throw new Error("Não autorizado");
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-muted/40">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">Criar Conta</CardTitle>
+          <CardDescription>
+            Preencha os dados abaixo para criar seu LifeOS.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={signUp} className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nome</Label>
+              <Input id="name" name="name" type="text" placeholder="Seu nome" required />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="m@exemplo.com" required />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            
+            {params.error && (
+              <p className="text-sm text-red-500">{params.error}</p>
+            )}
 
-  const amount = parseFloat(formData.get("amount") as string);
-  const description = formData.get("description") as string;
-  const type = formData.get("type") as string;
-  const categoryName = formData.get("category") as string;
-
-  // 1. Busca ou cria a conta vinculada APENAS a este usuário
-  let account = await prisma.account.findFirst({
-    where: { userId: user.id }
-  });
-
-  if (!account) {
-    account = await prisma.account.create({
-      data: { name: "Principal", userId: user.id, balance: 0 }
-    });
-  }
-
-  // 2. Busca ou cria a categoria deste usuário
-  let category = await prisma.category.findFirst({
-    where: { name: categoryName, userId: user.id }
-  });
-
-  if (!category) {
-    category = await prisma.category.create({
-      data: { name: categoryName, type, userId: user.id }
-    });
-  }
-
-  // 3. Cria a transação e atualiza o saldo
-  await prisma.$transaction([
-    prisma.transaction.create({
-      data: {
-        amount,
-        description,
-        type,
-        accountId: account.id,
-        categoryId: category.id,
-      },
-    }),
-    prisma.account.update({
-      where: { id: account.id },
-      data: {
-        balance: {
-          increment: type === "INCOME" ? amount : -amount,
-        },
-      },
-    }),
-  ]);
-
-  revalidatePath("/finance");
-  revalidatePath("/");
+            <Button type="submit" className="w-full">Cadastrar</Button>
+            
+            <div className="text-center text-sm mt-2">
+              Já tem uma conta? <Link href="/login" className="underline hover:text-primary">Faça login</Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

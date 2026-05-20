@@ -1,20 +1,30 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, CheckSquare, Activity } from "lucide-react";
+import { getAuthUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardHome() {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+
   const today = new Date().toLocaleString("en-CA", { timeZone: "America/Sao_Paulo" }).split(",")[0];
 
-  // Busca todos os dados de forma paralela para carregar mais rápido
+  // Filtros aplicados pelo user.id
   const [accounts, pendingTasksCount, habits] = await Promise.all([
-    prisma.account.findMany(),
-    prisma.task.count({ where: { isCompleted: false } }),
+    prisma.account.findMany({ where: { userId: user.id } }),
+    prisma.task.count({ 
+      where: { 
+        isCompleted: false,
+        project: { area: { userId: user.id } }
+      } 
+    }),
     prisma.habit.findMany({
+      where: { area: { userId: user.id } },
       include: { logs: { where: { date: today } } },
     }),
   ]);
 
-  // Cálculos do resumo
   const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
   const totalHabits = habits.length;
   const completedHabits = habits.filter(habit => habit.logs.length > 0).length;
@@ -24,7 +34,6 @@ export default async function DashboardHome() {
       <h1 className="text-3xl font-bold tracking-tight">Visão Geral</h1>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Card Financeiro */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Saldo Total</CardTitle>
@@ -37,7 +46,6 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Card Tarefas */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle>
@@ -49,7 +57,6 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Card Hábitos */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Hábitos de Hoje</CardTitle>
